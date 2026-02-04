@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宴会傾斜計算 - 吉岡研幹事用</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --bg-color: #f8f9fd;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --border-color: #e2e8f0;
+            --highlight-bg: #edf2f7;
+            --accent-red: #e53e3e;
+            --accent-gold: #b7791f;
+            --prof-bg: #fffaf0;
+            --prof-border: #feeebc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+            padding-bottom: 2rem;
+        }
+
+        header {
+            background: var(--primary-gradient);
+            padding: 2rem 1.5rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .header-sub {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .content-area {
+            padding: 0 1.5rem;
+        }
+
+        /* Input Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label.main-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 15px 14px 40px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            outline: none;
+            background-color: #fcfcfc;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Role List */
+        .role-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .role-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: transform 0.1s, border-color 0.2s;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .role-card:hover {
+            border-color: #cbd5e0;
+        }
+
+        .role-card:focus-within {
+            border-color: var(--primary-color);
+            background-color: #f8fbff;
+        }
+
+        .role-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .role-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .role-badge {
+            font-size: 0.75rem;
+            color: #fff;
+            background-color: #a0aec0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+            width: fit-content;
+        }
+
+        .badge-prof { background-color: var(--accent-gold); }
+        .badge-assist { background-color: #4fd1c5; }
+        .badge-student { background-color: #a0aec0; }
+
+        .role-input-small {
+            width: 70px !important;
+            padding: 8px 10px !important;
+            text-align: center;
+            border-radius: 8px !important;
+            font-size: 1rem !important;
+        }
+
+        /* Button */
+        button.calc-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 2rem;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button.calc-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Result Area */
+        #result {
+            margin-top: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .receipt {
+            background-color: #fff;
+            border: 1px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .receipt-header {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            margin-bottom: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 10px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* Left Side: Name and Meta info */
+        .res-left {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .res-name {
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .res-meta {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        /* Right Side: Per Person Price */
+        .res-right {
+            text-align: right;
+        }
+
+        .res-price-label {
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .res-price-main {
+            font-weight: 800;
+            font-size: 1.5rem; /* Big font for price */
+            color: var(--primary-color);
+            letter-spacing: -0.5px;
+        }
+
+        /* Professor Special Style */
+        .prof-row {
+            background-color: var(--prof-bg);
+            margin: 0 -1.5rem 1rem -1.5rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--prof-border);
+            border-bottom: 1px solid var(--prof-border);
+        }
+        
+        .prof-row .res-price-main {
+            color: var(--accent-gold);
+        }
+
+        .prof-tag {
+            font-size: 0.7rem;
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Total Section */
+        .total-section {
+            background-color: var(--text-main);
+            color: white;
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .total-label { font-size: 0.9rem; opacity: 0.8; }
+        .total-val { font-size: 1.3rem; font-weight: bold; }
+
+        .note-text {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            text-align: center;
+            margin-top: 1rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Smart Split</h1>
+        <div class="header-sub">傾斜配分計算ツール</div>
+    </header>
+
+    <div class="content-area">
+        <div class="form-group">
+            <label for="totalAmount" class="main-label">お会計合計</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-yen-sign"></i>
+                <input type="number" id="totalAmount" placeholder="例: 50000" inputmode="numeric">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="main-label">参加メンバー</label>
+            <div class="role-list">
+                
+                <label class="role-card">
+                    <div class="role-info">
+                        <span class="role-name">学部生</span>
+                        <span class="role-badge badge-student">x0.5</span>
+                    </div>
+                    <input type="number" class="role-input-small role-input" data-weight="0.5" data-role="general" min="0" placeholder="0" inputmode="numeric">
+                </label>
+
+                <label class="role-card">
+                    <div class="role-info">
+                        <span class="role-name">修士</span>
+                        <span class="role-badge badge-student">x1.0</span>
+                    </div>
+                    <input type="number" class="role-input-small role-input" data-weight="1.0" data-role="general" min="0" placeholder="0" inputmode="numeric">
+                </label>
+
+                <label class="role-card">
+                    <div class="role-info">
+                        <span class="role-name">博士</span>
+                        <span class="role-badge badge-student">x1.2</span>
+                    </div>
+                    <input type="number" class="role-input-small role-input" data-weight="1.2" data-role="general" min="0" placeholder="0" inputmode="numeric">
+                </label>
+
+                <label class="role-card">
+                    <div class="role-info">
+                        <span class="role-name">助教</span>
+                        <span class="role-badge badge-assist">x1.5</span>
+                    </div>
+                    <input type="number" class="role-input-small role-input" data-weight="1.5" data-role="assistant" min="0" placeholder="0" inputmode="numeric">
+                </label>
+
+                <label class="role-card" style="border-color: var(--accent-gold); background-color: #fffdf5;">
+                    <div class="role-info">
+                        <span class="role-name" style="color: var(--accent-gold);">教授</span>
+                        <span class="role-badge badge-prof">x2.5</span>
+                    </div>
+                    <input type="number" class="role-input-small role-input" data-weight="2.5" data-role="professor" min="1" value="1" inputmode="numeric">
+                </label>
+            </div>
+        </div>
+
+        <button class="calc-btn" onclick="calculate()">
+            <i class="fa-solid fa-calculator"></i> 計算する
+        </button>
+
+        <div id="result">
+            <div class="receipt">
+                <div class="receipt-header">お一人あたりの支払額</div>
+                <div id="result-content"></div>
+                
+                <div class="note-text">
+                    学生: 500円単位で丸め / 助教: 1000円切り上げ<br>
+                    端数は教授負担で調整済
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // 1. 合計金額の取得
+        const totalAmount = parseInt(document.getElementById('totalAmount').value);
+        if (isNaN(totalAmount) || totalAmount <= 0) {
+            alert("合計金額を正しく入力してください。");
+            return;
+        }
+
+        // 2. 入力欄の取得
+        const inputs = Array.from(document.querySelectorAll('.role-input'));
+        
+        let totalWeight = 0;
+        let others = []; // 教授以外
+        let professor = null;
+
+        // 3. データの振り分けと総ウェイト計算
+        inputs.forEach(input => {
+            const count = parseInt(input.value) || 0;
+            const weight = parseFloat(input.getAttribute('data-weight'));
+            const roleType = input.getAttribute('data-role');
+            const labelText = input.closest('.role-card').querySelector('.role-name').textContent.trim();
+
+            if (count > 0) {
+                totalWeight += count * weight;
+                if (roleType === 'professor') {
+                    professor = { name: labelText, count: count, weight: weight };
+                } else {
+                    others.push({ name: labelText, count: count, weight: weight, type: roleType });
+                }
+            }
+        });
+
+        if (!professor) {
+            alert("教授の人数は1名以上にしてください。");
+            return;
+        }
+
+        // 4. 計算ロジック
+        const baseUnitCost = totalAmount / totalWeight;
+        let currentTotalCollected = 0;
+        let resultHTML = '';
+
+        // A. 教授以外（学部・修士・博士・助教）の計算
+        others.forEach(person => {
+            let rawCost = baseUnitCost * person.weight;
+            let finalCost = 0;
+
+            if (person.type === 'assistant') {
+                finalCost = Math.ceil(rawCost / 1000) * 1000;
+            } else {
+                finalCost = Math.round(rawCost / 500) * 500;
+            }
+
+            let subTotal = finalCost * person.count;
+            currentTotalCollected += subTotal;
+
+            // HTML生成: 1人あたり金額を目立たせる
+            resultHTML += `
+                <div class="result-row">
+                    <div class="res-left">
+                        <span class="res-name">${person.name}</span>
+                        <span class="res-meta">${person.count}名 (計 ¥${subTotal.toLocaleString()})</span>
+                    </div>
+                    <div class="res-right">
+                        <span class="res-price-label">1人あたり</span>
+                        <span class="res-price-main">¥${finalCost.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        // B. 教授の計算：残り全額
+        let professorTotalPayment = totalAmount - currentTotalCollected;
+        let professorUnitCost = Math.ceil(professorTotalPayment / professor.count);
+        
+        // 教授部分のHTML
+        let profHTML = `
+            <div class="result-row prof-row">
+                <div class="res-left">
+                    <span class="res-name" style="color:#b7791f;">
+                        ${professor.name} <span class="prof-tag">調整</span>
+                    </span>
+                    <span class="res-meta">${professor.count}名 (計 ¥${professorTotalPayment.toLocaleString()})</span>
+                </div>
+                <div class="res-right">
+                    <span class="res-price-label">1人あたり</span>
+                    <span class="res-price-main">¥${professorUnitCost.toLocaleString()}</span>
+                </div>
+            </div>
+        `;
+
+        resultHTML += profHTML;
+
+        // 合計表示
+        resultHTML += `
+            <div class="total-section">
+                <span class="total-label">回収合計</span>
+                <span class="total-val">¥${totalAmount.toLocaleString()}</span>
+            </div>
+        `;
+
+        const resultDiv = document.getElementById('result');
+        document.getElementById('result-content').innerHTML = resultHTML;
+        resultDiv.style.display = 'block';
+        
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+</script>
+
+</body>
+</html>
