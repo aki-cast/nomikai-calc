@@ -399,7 +399,7 @@
                 <div id="result-content"></div>
                 
                 <div class="note-text">
-                    学生: 500円単位で丸め / 助教: 1000円切り上げ<br>
+                    教授以外: 500円単位で丸め<br>
                     端数は教授負担で調整済
                 </div>
             </div>
@@ -455,11 +455,7 @@
             let rawCost = baseUnitCost * person.weight;
             let finalCost = 0;
 
-            if (person.type === 'assistant') {
-                finalCost = Math.ceil(rawCost / 1000) * 1000;
-            } else {
-                finalCost = Math.round(rawCost / 500) * 500;
-            }
+            finalCost = Math.round(rawCost / 500) * 500;
 
             let subTotal = finalCost * person.count;
             currentTotalCollected += subTotal;
